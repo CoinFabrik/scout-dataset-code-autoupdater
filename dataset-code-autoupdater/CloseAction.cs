@@ -8,4 +8,8 @@ class CloseAction : Action
     {
         return true;
     }
+
+    protected override void ReportNonExecutionInternal(State state, int level)
+    {
+    }
 }

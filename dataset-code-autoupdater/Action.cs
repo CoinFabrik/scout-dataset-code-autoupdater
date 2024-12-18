@@ -8,9 +8,23 @@ abstract class Action
     public void Execute(State state)
     {
         if (!ExecuteInternal(state))
+        {
+            foreach (var subaction in _subactions)
+                subaction.ReportNonExecution(state, 1);
             return;
+        }
+
         foreach (var subaction in _subactions)
             subaction.Execute(state);
+    }
+
+    protected abstract void ReportNonExecutionInternal(State state, int level);
+
+    private void ReportNonExecution(State state, int level)
+    {
+        ReportNonExecutionInternal(state, level);
+        foreach (var subaction in _subactions)
+            subaction.ReportNonExecution(state, level + 1);
     }
 
     public void Add(Action action)

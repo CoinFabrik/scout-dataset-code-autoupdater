@@ -14,4 +14,9 @@ class TaggingAction(string sourceRepository, string commit, string newTagName) :
         state.RunProcess("git", "push", state.RemoteName, "tag", NewTagName);
         return true;
     }
+
+    protected override void ReportNonExecutionInternal(State state, int level)
+    {
+        state.Errors.Add($"{"  ".Repeat(level)}--> Will not create tag {NewTagName}");
+    }
 }

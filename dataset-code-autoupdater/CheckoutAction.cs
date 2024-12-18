@@ -19,6 +19,7 @@ class CheckoutAction : Action
         var commit = repository.Lookup(Commit);
         return (commit as Commit) != null;
     }
+
     protected override bool ExecuteInternal(State state)
     {
         if (!CheckValid(state))
@@ -31,5 +32,10 @@ class CheckoutAction : Action
         state.RunProcess("git", "branch", $"temp-{Commit}");
         state.RunProcess("git", "checkout", $"temp-{Commit}");
         return true;
+    }
+
+    protected override void ReportNonExecutionInternal(State state, int level)
+    {
+        state.Errors.Add($"{"  ".Repeat(level)}--> Will not checkout commit {Commit}");
     }
 }
