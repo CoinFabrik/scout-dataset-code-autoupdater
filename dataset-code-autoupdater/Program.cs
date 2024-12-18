@@ -20,9 +20,9 @@ namespace dataset_code_autoupdater
             return ret;
         }
 
-        static IEnumerable<TaggingAction> ComputeTaggingActions()
+        static IEnumerable<TaggingAction> ComputeTaggingActions(Config config)
         {
-            using var repo = new Repository("./scout-substrate-dataset-code");
+            using var repo = new Repository(config.DatasetCodeLocalDir);
             var tagsByCommit = new Dictionary<string, List<Tag>>();
             var tagsByName = new Dictionary<string, List<Tag>>();
             foreach (var tag in repo.Tags)
@@ -112,14 +112,26 @@ namespace dataset_code_autoupdater
 
         static void Main(string[] args)
         {
-            var actions = FlattenActions(GroupActionsByCommit(GroupActionsByRepo(ComputeTaggingActions()))).ToList();
-            var config = new Config
+            try
             {
-                RemoteName = "target_remote",
-                RemoteUrl = "http://gogs2.nkt/victor/scout-substrate-dataset-code.git",
-            };
-            foreach (var action in actions)
-                action.Execute(config);
+                var config = new Config
+                {
+                    RemoteName = "target_remote",
+                    RemoteUrl = "http://gogs2.nkt/victor/scout-substrate-dataset-code.git",
+                };
+                config.DatasetCodeLocalDir = Utility.GetGitDestination(config.RemoteUrl, Environment.CurrentDirectory);
+                Utility.RunProcessThrowing(config, "git", "clone", "--bare", config.RemoteUrl, config.DatasetCodeLocalDir);
+
+                var actions = FlattenActions(GroupActionsByCommit(GroupActionsByRepo(ComputeTaggingActions(config))))
+                    .ToList();
+                foreach (var action in actions)
+                    action.Execute(config);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
+                Console.Error.WriteLine(e.StackTrace);
+            }
         }
     }
 }

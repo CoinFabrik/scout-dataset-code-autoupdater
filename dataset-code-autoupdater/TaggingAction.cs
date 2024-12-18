@@ -10,7 +10,7 @@ class TaggingAction : Action
 
     public override void Execute(Config config)
     {
-        Utility.RunProcessThrowing(config.WorkingDirectory, "git", "tag", NewTagName);
-        Utility.RunProcessThrowing(config.WorkingDirectory, "git", "push", config.RemoteName, "tag", NewTagName);
+        Utility.RunProcessThrowing(config, "git", "tag", NewTagName);
+        Utility.RunProcessThrowing(config, "git", "push", config.RemoteName, "tag", NewTagName);
     }
 }

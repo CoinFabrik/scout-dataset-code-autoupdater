@@ -13,8 +13,8 @@ class CheckoutAction : Action
 
     public override void Execute(Config config)
     {
-        Utility.RunProcessThrowing(config.WorkingDirectory, "git", "checkout", Commit);
-        Utility.RunProcessThrowing(config.WorkingDirectory, "git", "branch", $"temp-{Commit}");
-        Utility.RunProcessThrowing(config.WorkingDirectory, "git", "checkout", $"temp-{Commit}");
+        Utility.RunProcessThrowing(config, "git", "checkout", Commit);
+        Utility.RunProcessThrowing(config, "git", "branch", $"temp-{Commit}");
+        Utility.RunProcessThrowing(config, "git", "checkout", $"temp-{Commit}");
     }
 }

@@ -11,11 +11,10 @@ class CloneAction : Action
 
     public override void Execute(Config config)
     {
-        var url = new Uri(Repository);
-        var basePath = config.WorkingDirectory = $"./{Path.GetFileName(url.LocalPath)}";
-        for (int i = 1; Directory.Exists(config.WorkingDirectory); i++)
-            config.WorkingDirectory = $"{basePath}-{i}";
-        Utility.RunProcessThrowing(".", "git", "clone", Repository, config.WorkingDirectory);
-        Utility.RunProcessThrowing(config.WorkingDirectory, "git", "remote", "add", config.RemoteName, config.RemoteUrl);
+        config.WorkingDirectory = Environment.CurrentDirectory;
+        var dst = Utility.GetGitDestination(Repository, Environment.CurrentDirectory);
+        Utility.RunProcessThrowing(config, "git", "clone", Repository, dst);
+        config.WorkingDirectory = dst;
+        Utility.RunProcessThrowing(config, "git", "remote", "add", config.RemoteName, config.DatasetCodeLocalDir);
     }
 }
