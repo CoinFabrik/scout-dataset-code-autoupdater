@@ -4,7 +4,8 @@ namespace dataset_code_autoupdater;
 
 class CloseAction : Action
 {
-    public override void Execute(Config config)
+    protected override bool ExecuteInternal(State state)
     {
+        return true;
     }
 }

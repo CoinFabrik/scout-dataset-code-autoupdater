@@ -10,12 +10,11 @@ namespace dataset_code_autoupdater
 {
     static class Utility
     {
-        public static int RunProcess(Config config, string command, params string[] arguments)
+        public static int RunProcess(string workingDirectory, string command, params string[] arguments)
         {
-            config.Log($"@{config.WorkingDirectory}\n{command}\n{arguments.Select(x => $">{x}").Join("\n")}");
             var psi = new ProcessStartInfo(command, arguments)
             {
-                WorkingDirectory = config.WorkingDirectory,
+                WorkingDirectory = workingDirectory,
                 //CreateNoWindow = true,
             };
 
@@ -30,9 +29,9 @@ namespace dataset_code_autoupdater
             return process.ExitCode;
         }
 
-        public static void RunProcessThrowing(Config config, string command, params string[] arguments)
+        public static void RunProcessThrowing(string workingDirectory, string command, params string[] arguments)
         {
-            var code = RunProcess(config, command, arguments);
+            var code = RunProcess(workingDirectory, command, arguments);
             if (code != 0)
                 throw new Exception($"{command} {arguments.Join(" ")} failed with code {code}");
         }
@@ -61,6 +60,14 @@ namespace dataset_code_autoupdater
             for (int i = 1; Directory.Exists(ret); i++)
                 ret = $"{basePath}-{i}";
             return ret;
+        }
+
+        public static string Repeat(this string s, int n)
+        {
+            var ret = new StringBuilder();
+            for (int i = n; i-- > 0; )
+                ret.Append(s);
+            return ret.ToString();
         }
     }
 }

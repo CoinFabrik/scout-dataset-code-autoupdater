@@ -2,15 +2,16 @@
 
 namespace dataset_code_autoupdater;
 
-class TaggingAction : Action
+class TaggingAction(string sourceRepository, string commit, string newTagName) : Action
 {
-    public string SourceRepository;
-    public string Commit;
-    public string NewTagName;
+    public string SourceRepository = sourceRepository;
+    public string Commit = commit;
+    public string NewTagName = newTagName;
 
-    public override void Execute(Config config)
+    protected override bool ExecuteInternal(State state)
     {
-        Utility.RunProcessThrowing(config, "git", "tag", NewTagName);
-        Utility.RunProcessThrowing(config, "git", "push", config.RemoteName, "tag", NewTagName);
+        state.RunProcess("git", "tag", NewTagName);
+        state.RunProcess("git", "push", state.RemoteName, "tag", NewTagName);
+        return true;
     }
 }

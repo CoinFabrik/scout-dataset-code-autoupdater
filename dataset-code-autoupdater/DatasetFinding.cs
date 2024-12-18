@@ -2,11 +2,13 @@
 
 class DatasetFinding
 {
+#pragma warning disable CS0649
     public long audited_project_id;
     public long issue_index;
     public string repository;
     public string audited_commit;
     public string? reported_remediated_commit;
+#pragma warning restore CS0649
 
     public IEnumerable<Finding> ToFindings()
     {

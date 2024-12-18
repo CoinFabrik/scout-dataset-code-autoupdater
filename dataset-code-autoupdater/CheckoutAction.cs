@@ -4,17 +4,32 @@ namespace dataset_code_autoupdater;
 
 class CheckoutAction : Action
 {
+    public string Repository;
     public string Commit;
 
-    public CheckoutAction(string commit)
+    public CheckoutAction(string repo, string commit)
     {
+        Repository = repo;
         Commit = commit;
     }
 
-    public override void Execute(Config config)
+    private bool CheckValid(State state)
     {
-        Utility.RunProcessThrowing(config, "git", "checkout", Commit);
-        Utility.RunProcessThrowing(config, "git", "branch", $"temp-{Commit}");
-        Utility.RunProcessThrowing(config, "git", "checkout", $"temp-{Commit}");
+        using var repository = new Repository(state.WorkingDirectory);
+        var commit = repository.Lookup(Commit);
+        return (commit as Commit) != null;
+    }
+    protected override bool ExecuteInternal(State state)
+    {
+        if (!CheckValid(state))
+        {
+            state.Errors.Add($"Commit {Commit} does not exist in {Repository}");
+            return false;
+        }
+
+        state.RunProcess("git", "checkout", Commit);
+        state.RunProcess("git", "branch", $"temp-{Commit}");
+        state.RunProcess("git", "checkout", $"temp-{Commit}");
+        return true;
     }
 }

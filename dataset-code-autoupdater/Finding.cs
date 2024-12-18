@@ -2,8 +2,8 @@
 
 class Finding
 {
-    public string Repo;
-    public string Commit;
+    public string? Repo;
+    public string? Commit;
     public bool Remediated;
     public long ProjectId;
     public long IssueIndex;
@@ -21,7 +21,7 @@ class Finding
 
     public class Comparer : IEqualityComparer<Finding>
     {
-        public bool Equals(Finding l, Finding r)
+        public bool Equals(Finding? l, Finding? r)
         {
             if (ReferenceEquals(l, r)) return true;
             if (ReferenceEquals(l, null)) return false;

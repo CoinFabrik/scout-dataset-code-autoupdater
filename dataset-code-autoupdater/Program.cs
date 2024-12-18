@@ -20,9 +20,9 @@ namespace dataset_code_autoupdater
             return ret;
         }
 
-        static IEnumerable<TaggingAction> ComputeTaggingActions(Config config)
+        static IEnumerable<TaggingAction> ComputeTaggingActions(State state)
         {
-            using var repo = new Repository(config.DatasetCodeLocalDir);
+            using var repo = new Repository(state.DatasetCodeLocalDir);
             var tagsByCommit = new Dictionary<string, List<Tag>>();
             var tagsByName = new Dictionary<string, List<Tag>>();
             foreach (var tag in repo.Tags)
@@ -57,12 +57,7 @@ namespace dataset_code_autoupdater
                 if (tagsByName.ContainsKey(finding.PredictedTagName))
                     throw new Exception($"Error 3 in dataset: {finding.PredictedTagName}");
 
-                yield return new TaggingAction
-                {
-                    SourceRepository = finding.Repo,
-                    Commit = finding.Commit,
-                    NewTagName = finding.PredictedTagName,
-                };
+                yield return new TaggingAction(finding.Repo, finding.Commit, finding.PredictedTagName);
             }
         }
 
@@ -94,19 +89,19 @@ namespace dataset_code_autoupdater
             return ret;
         }
 
-        static IEnumerable<Action> FlattenActions(Dictionary<string, Dictionary<string, List<TaggingAction>>> groups)
+        static IEnumerable<Action> FinalizeActions(Dictionary<string, Dictionary<string, List<TaggingAction>>> groups)
         {
             foreach (var (repo, subgroups) in groups)
             {
-                yield return new CloneAction(repo);
+                var clone = new CloneAction(repo);
                 foreach (var (commit, subgroup) in subgroups)
                 {
-                    yield return new CheckoutAction(commit);
-                    foreach (var taggingAction in subgroup)
-                        yield return taggingAction;
+                    var checkout = new CheckoutAction(repo, commit);
+                    checkout.AddRange(subgroup);
+                    clone.Add(checkout);
                 }
-
-                yield return new CloseAction();
+                clone.Add(new CloseAction());
+                yield return clone;
             }
         }
 
@@ -114,18 +109,28 @@ namespace dataset_code_autoupdater
         {
             try
             {
-                var config = new Config
-                {
-                    RemoteName = "target_remote",
-                    RemoteUrl = "http://gogs2.nkt/victor/scout-substrate-dataset-code.git",
-                };
-                config.DatasetCodeLocalDir = Utility.GetGitDestination(config.RemoteUrl, Environment.CurrentDirectory);
-                Utility.RunProcessThrowing(config, "git", "clone", "--bare", config.RemoteUrl, config.DatasetCodeLocalDir);
+                var config = new Config("http://gogs2.nkt/victor/scout-substrate-dataset-code.git", "target_remote");
+                using var state = new State(config);
+                state.RunProcess("git", "clone", "--bare", config.RemoteUrl, state.DatasetCodeLocalDir);
 
-                var actions = FlattenActions(GroupActionsByCommit(GroupActionsByRepo(ComputeTaggingActions(config))))
+                var actions = FinalizeActions(GroupActionsByCommit(GroupActionsByRepo(ComputeTaggingActions(state))))
                     .ToList();
                 foreach (var action in actions)
-                    action.Execute(config);
+                    action.Execute(state);
+
+                Console.Write(Environment.NewLine.Repeat(10));
+
+                if (state.Errors.Count == 0)
+                {
+                    Console.WriteLine("All done, no errors!");
+                }
+                else
+                {
+                    Console.Error.WriteLine($"Completed with {state.Errors.Count} error(s)");
+                    foreach (var error in state.Errors)
+                        Console.Error.WriteLine(error);
+                }
+                Console.WriteLine($"Now push {state.DatasetCodeLocalDir}");
             }
             catch (Exception e)
             {

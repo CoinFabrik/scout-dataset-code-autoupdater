@@ -9,12 +9,13 @@ class CloneAction : Action
         Repository = repo;
     }
 
-    public override void Execute(Config config)
+    protected override bool ExecuteInternal(State state)
     {
-        config.WorkingDirectory = Environment.CurrentDirectory;
+        state.WorkingDirectory = Environment.CurrentDirectory;
         var dst = Utility.GetGitDestination(Repository, Environment.CurrentDirectory);
-        Utility.RunProcessThrowing(config, "git", "clone", Repository, dst);
-        config.WorkingDirectory = dst;
-        Utility.RunProcessThrowing(config, "git", "remote", "add", config.RemoteName, config.DatasetCodeLocalDir);
+        state.RunProcess("git", "clone", Repository, dst);
+        state.WorkingDirectory = dst;
+        state.RunProcess("git", "remote", "add", state.RemoteName, state.DatasetCodeLocalDir);
+        return true;
     }
 }
