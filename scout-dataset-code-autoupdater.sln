@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dataset-code-autoupdater", "dataset-code-autoupdater\dataset-code-autoupdater.csproj", "{AC49A1EC-C6B4-4EB1-AF0A-8AEA8DFFFE5E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "scout-dataset-code-autoupdater", "scout-dataset-code-autoupdater\scout-dataset-code-autoupdater.csproj", "{AC49A1EC-C6B4-4EB1-AF0A-8AEA8DFFFE5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

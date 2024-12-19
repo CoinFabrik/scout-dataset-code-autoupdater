@@ -7,4 +7,5 @@ class Config
     public string DatasetUrl = "";
     public string? DatasetBranch;
     public string CloneLocation = ".";
+    public string TemporaryCloneLocation => Path.Join(CloneLocation, "temp");
 }

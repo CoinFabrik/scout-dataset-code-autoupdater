@@ -17,6 +17,7 @@ class State : IDisposable
     public string RemoteName => _config.RemoteName;
     public string DatasetCodeUrl => _config.DatasetCodeUrl;
     public string CloneLocation => _config.CloneLocation;
+    public string TemporaryCloneLocation => _config.TemporaryCloneLocation;
 
     public State(Config config)
     {

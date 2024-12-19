@@ -35,8 +35,8 @@ class CloneAction : Action
             return false;
         }
 
-        state.WorkingDirectory = Environment.CurrentDirectory;
-        var dst = Utility.GetGitDestination(Repository, Environment.CurrentDirectory);
+        state.WorkingDirectory = state.TemporaryCloneLocation;
+        var dst = Utility.GetGitDestination(Repository, state.WorkingDirectory);
         state.RunProcess("git", "clone", Repository, dst);
         state.WorkingDirectory = dst;
         state.RunProcess("git", "remote", "add", state.RemoteName, state.DatasetCodeLocalDir);
