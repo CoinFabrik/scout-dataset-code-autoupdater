@@ -77,7 +77,7 @@ namespace dataset_code_autoupdater
             return ret.ToString();
         }
 
-        public static string CloneDirectoty(string parent, string directory)
+        public static string CloneDirectory(string parent, string directory)
         {
             var ret = PickNonexistentFileName(parent, directory);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

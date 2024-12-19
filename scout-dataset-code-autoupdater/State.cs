@@ -49,6 +49,6 @@ class State : IDisposable
 
     public void CloneDatasetCodeDir()
     {
-        DatasetCodeLocalDirName = Utility.CloneDirectoty(CloneLocation, DatasetCodeLocalDirName);
+        DatasetCodeLocalDirName = Utility.CloneDirectory(CloneLocation, DatasetCodeLocalDirName);
     }
 }
