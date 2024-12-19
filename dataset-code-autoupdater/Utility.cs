@@ -57,15 +57,15 @@ namespace dataset_code_autoupdater
             var ret = Path.GetFileName(new Uri(repositoryUrl).LocalPath);
             if (parentPath == null)
                 return ret;
-            return PickNonexistentFileName(parentPath, ret);
+            ret = PickNonexistentFileName(parentPath, ret);
+            return Path.Join(parentPath, ret);
         }
 
         public static string PickNonexistentFileName(string parent, string baseName)
         {
-            var basePath = Path.Join(parent, baseName);
-            var ret = basePath;
-            for (int i = 2; Directory.Exists(ret); i++)
-                ret = $"{basePath}-{i}";
+            var ret = baseName;
+            for (int i = 2; Directory.Exists(Path.Join(parent, ret)); i++)
+                ret = $"{baseName}-{i}";
             return ret;
         }
 
