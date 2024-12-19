@@ -1,7 +1,10 @@
 ﻿namespace dataset_code_autoupdater;
 
-class Config(string remoteUrl, string remoteName)
+class Config
 {
-    public string RemoteUrl = remoteUrl;
-    public string RemoteName = remoteName;
+    public string DatasetCodeUrl = "";
+    public string RemoteName = "";
+    public string DatasetUrl = "";
+    public string? DatasetBranch;
+    public string CloneLocation = ".";
 }

@@ -5,16 +5,32 @@ namespace dataset_code_autoupdater
 {
     internal class Program
     {
-        static List<DatasetFinding> LoadRawFindings()
+        static IEnumerable<DatasetFinding> LoadRawFindings(State state)
         {
-            using var file = new StreamReader(@"./findings-linear.json");
-            return JsonConvert.DeserializeObject<List<DatasetFinding>>(file.ReadToEnd());
+            Utility.CloneOrUpdate(state.DatasetUrl, state.CloneLocation, state.DatasetLocalDirName, CloneOptions.DefaultPlusBranch(state.DatasetBranch));
+
+            var jsonFiles = Directory.EnumerateFiles(Path.Join(state.DatasetLocalDir, "audited-projects"), "*.json",
+                SearchOption.AllDirectories);
+            foreach (var jsonFile in jsonFiles)
+            {
+                using var file = new StreamReader(jsonFile);
+                var proj = JsonConvert.DeserializeObject<DatasetProject>(file.ReadToEnd());
+                if (proj == null)
+                    continue;
+                long index = 0;
+                foreach (var finding in proj.Findings)
+                {
+                    finding.AuditedProjectId = proj.AuditedProjectId;
+                    finding.IssueIndex = index++;
+                    yield return finding;
+                }
+            }
         }
 
-        static HashSet<Finding> LoadFindings()
+        static HashSet<Finding> LoadFindings(State state)
         {
             var ret = new HashSet<Finding>(new Finding.Comparer());
-            foreach (var f in LoadRawFindings())
+            foreach (var f in LoadRawFindings(state))
                 foreach (var f2 in f.ToFindings())
                     ret.Add(f2);
             return ret;
@@ -41,7 +57,7 @@ namespace dataset_code_autoupdater
                 }
             }
 
-            var findings = LoadFindings();
+            var findings = LoadFindings(state);
             foreach (var finding in findings)
             {
                 if (tagsByCommit.TryGetValue(finding.Commit, out var tagByCommit))
@@ -109,12 +125,21 @@ namespace dataset_code_autoupdater
         {
             try
             {
-                var config = new Config("http://gogs2.nkt/victor/scout-substrate-dataset-code.git", "target_remote");
+                var config = new Config
+                {
+                    RemoteName = "target_remote",
+                    DatasetUrl = "https://github.com/CoinFabrik/scout-substrate-dataset.git",
+                    DatasetBranch = "various-fixes",
+                    DatasetCodeUrl = "https://github.com/CoinFabrik/scout-substrate-dataset-code.git",
+                };
                 using var state = new State(config);
-                state.RunProcess("git", "clone", "--bare", config.RemoteUrl, state.DatasetCodeLocalDir);
+
+                Utility.CloneOrUpdate(state.DatasetCodeUrl, state.CloneLocation, state.DatasetCodeLocalDirName, CloneOptions.DefaultPlusBare());
+                state.CloneDatasetCodeDir();
 
                 var actions = FinalizeActions(GroupActionsByCommit(GroupActionsByRepo(ComputeTaggingActions(state))))
                     .ToList();
+
                 foreach (var action in actions)
                     action.Execute(state);
 

@@ -1,15 +1,28 @@
-﻿namespace dataset_code_autoupdater;
+﻿using System.Runtime.InteropServices;
 
-class State : Config, IDisposable
+namespace dataset_code_autoupdater;
+
+class State : IDisposable
 {
+    private Config _config;
     private StreamWriter? _logFile = new("log.txt");
     public string WorkingDirectory = ".";
-    public string DatasetCodeLocalDir;
+    public string DatasetLocalDirName;
+    public string DatasetLocalDir => Path.Join(_config.CloneLocation, DatasetLocalDirName);
+    public string DatasetCodeLocalDirName;
+    public string DatasetCodeLocalDir => Path.Join(_config.CloneLocation, DatasetCodeLocalDirName);
     public List<string> Errors = new();
+    public string DatasetUrl => _config.DatasetUrl;
+    public string DatasetBranch => _config.DatasetBranch;
+    public string RemoteName => _config.RemoteName;
+    public string DatasetCodeUrl => _config.DatasetCodeUrl;
+    public string CloneLocation => _config.CloneLocation;
 
-    public State(Config config): base(config.RemoteUrl, config.RemoteName)
+    public State(Config config)
     {
-        DatasetCodeLocalDir = Utility.GetGitDestination(config.RemoteUrl, Environment.CurrentDirectory);
+        _config = config;
+        DatasetLocalDirName = Utility.GetGitDestination(config.DatasetUrl);
+        DatasetCodeLocalDirName = Utility.GetGitDestination(config.DatasetCodeUrl);
     }
 
     public void Dispose()
@@ -31,5 +44,10 @@ class State : Config, IDisposable
     {
         Log($"@{WorkingDirectory}\n{command}\n{arguments.Select(x => $">{x}").Join("\n")}");
         Utility.RunProcessThrowing(WorkingDirectory, command, arguments);
+    }
+
+    public void CloneDatasetCodeDir()
+    {
+        DatasetCodeLocalDirName = Utility.CloneDirectoty(CloneLocation, DatasetCodeLocalDirName);
     }
 }
