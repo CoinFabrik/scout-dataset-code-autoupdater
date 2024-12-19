@@ -77,13 +77,14 @@ namespace dataset_code_autoupdater
             return ret.ToString();
         }
 
-        public static string CloneDirectory(string parent, string directory)
+        public static string CloneDirectory(string parent, string destinationParent, string directory)
         {
-            var ret = PickNonexistentFileName(parent, directory);
+            Directory.CreateDirectory(destinationParent);
+            var ret = PickNonexistentFileName(destinationParent, directory);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                RunProcess(parent, "robocopy", "/mir", directory, ret);
+                RunProcess(parent, "robocopy", "/mir", directory, Path.Join(destinationParent, ret));
             else
-                RunProcessThrowing(parent, "cp", "-r", directory, ret);
+                RunProcessThrowing(parent, "cp", "-r", directory, Path.Join(destinationParent, ret));
             return ret;
         }
 
