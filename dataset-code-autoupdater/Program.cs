@@ -132,6 +132,9 @@ namespace dataset_code_autoupdater
                     DatasetBranch = "various-fixes",
                     DatasetCodeUrl = "https://github.com/CoinFabrik/scout-substrate-dataset-code.git",
                 };
+                if (args.Length > 0)
+                    config.CloneLocation = args[0];
+
                 using var state = new State(config);
 
                 Utility.CloneOrUpdate(state.DatasetCodeUrl, state.CloneLocation, state.DatasetCodeLocalDirName, CloneOptions.DefaultPlusBare());
